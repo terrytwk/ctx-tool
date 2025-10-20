@@ -37,7 +37,8 @@ Born from MIT **6.1040 Software Design**, where students work extensively with M
 1. Open the project in VS Code
 2. `yarn` (or `npm install`)
 3. `yarn watch` (or `npm run watch`)
-4. Press **F5** to launch the Extension Development Host
+4. Edit the second item in the `"args"` array of `.vscode/launch.json` to point to the folder you want to test.
+5. Press **F5** to launch the Extension Development Host
 
 > When publishing, add your `"publisher"` to `package.json`.
 
