@@ -1,0 +1,67 @@
+{
+  "name": "ctx-tool",
+  "displayName": "ctx-tool",
+  "description": "a tool to easily use .ctx and link markdown",
+  "version": "0.0.1",
+  "publisher": "terrytwk",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other",
+    "Education",
+    "AI"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onCommand:ctx-tool.ctxPrompt",
+    "onCommand:ctx-tool.ctxSave",
+    "workspaceContains:**/*.md"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ctx-tool.ctxPrompt",
+        "title": "Ctx: Prompt current Markdown"
+      },
+      {
+        "command": "ctx-tool.ctxSave",
+        "title": "Ctx: Save current Markdown"
+      }
+    ]
+  },
+  "menus": {
+    "editor/title": [
+      {
+        "command": "ctx-tool.ctxPrompt",
+        "when": "resourceLangId == markdown",
+        "group": "navigation@10"
+      },
+      {
+        "command": "ctx-tool.ctxSave",
+        "when": "resourceLangId == markdown",
+        "group": "navigation@11"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.105.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
