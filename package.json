@@ -16,6 +16,7 @@
     "onLanguage:markdown",
     "onCommand:ctx-tool.ctxPrompt",
     "onCommand:ctx-tool.ctxSave",
+    "onCommand:ctx-tool.configureMarkdownSettings",
     "workspaceContains:**/*.md"
   ],
   "main": "./out/extension.js",
@@ -28,8 +29,49 @@
       {
         "command": "ctx-tool.ctxSave",
         "title": "Ctx: Save current Markdown"
+      },
+      {
+        "command": "ctx-tool.configureMarkdownSettings",
+        "title": "Ctx: Configure Markdown Settings"
       }
     ]
+  },
+  "configurationDefaults": {
+    "[markdown]": {
+      "editor.quickSuggestions": true,
+      "editor.suggestOnTriggerCharacters": true,
+      "editor.quickSuggestionsDelay": 50,
+      "editor.wordBasedSuggestions": false,
+      "editor.inlineSuggest.enabled": false,
+      "editor.snippetSuggestions": "none",
+      "editor.suggest.showWords": false,
+      "editor.suggest.showSnippets": false,
+      "editor.suggest.showClasses": false,
+      "editor.suggest.showColors": false,
+      "editor.suggest.showConstructors": false,
+      "editor.suggest.showConstants": false,
+      "editor.suggest.showCustomcolors": false,
+      "editor.suggest.showEnums": false,
+      "editor.suggest.showEnumMembers": false,
+      "editor.suggest.showEvents": false,
+      "editor.suggest.showFields": false,
+      "editor.suggest.showFiles": true,
+      "editor.suggest.showFolders": false,
+      "editor.suggest.showFunctions": false,
+      "editor.suggest.showInterfaces": false,
+      "editor.suggest.showIssues": false,
+      "editor.suggest.showKeywords": false,
+      "editor.suggest.showMethods": false,
+      "editor.suggest.showModules": false,
+      "editor.suggest.showOperators": false,
+      "editor.suggest.showProperties": false,
+      "editor.suggest.showReferences": false,
+      "editor.suggest.showStructs": false,
+      "editor.suggest.showTypeParameters": false,
+      "editor.suggest.showUnits": false,
+      "editor.suggest.showUsers": false,
+      "editor.suggest.showValues": false
+    }
   },
   "menus": {
     "editor/title": [

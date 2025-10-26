@@ -18,6 +18,8 @@ Born from MIT **6.1040 Software Design**, where students work extensively with M
 
     * `@` → `[@filename](path/to/file.md)`
     * `!@` → `![@filename](path/to/file.md)` (image-style)
+  
+  > **Auto-configured:** Optimal markdown editor settings are applied automatically. No configuration needed!
 
 <img src="assets/demo-autocomplete.gif" alt="Demo: autocomplete linking with `@`" width="600"/>
 
@@ -60,13 +62,19 @@ Born from MIT **6.1040 Software Design**, where students work extensively with M
 
 **Running `ctx`**
 
-* Command Palette (`cmd + shift + P`) → run **“Ctx: Prompt current Markdown”** or **“Ctx: Save current Markdown.”**
+* Command Palette (`cmd + shift + P`) → run **"Ctx: Prompt current Markdown"** or **"Ctx: Save current Markdown."**
 
 ---
 
-## Required settings (to ensure suggestions appear in Markdown)
+## Troubleshooting: Markdown suggestions not appearing?
 
-Depending on your setup, Markdown suggestions may be subdued. Add this to **Settings (JSON)**:
+The extension provides optimal Markdown editor settings automatically. If the `@` autocomplete isn't working, try the following:
+
+### Quick Fix
+Run **"Ctx: Configure Markdown Settings"** from the Command Palette to apply workspace settings.
+
+### Manual Configuration
+If the automatic defaults are overridden by your settings, add these to your workspace **Settings (JSON)**:
 
 ```json
 "[markdown]": {
@@ -104,18 +112,11 @@ Depending on your setup, Markdown suggestions may be subdued. Add this to **Sett
   "editor.suggest.showTypeParameters": false,
   "editor.suggest.showUnits": false,
   "editor.suggest.showUsers": false,
-  "editor.suggest.showValues": false,
-  "editor.suggestSelection": "first"
-},
-"markdown.suggest.paths.enabled": false
+  "editor.suggest.showValues": false
+}
 ```
 
-> **Note:** The *only* setting strictly required for Markdown suggestions to work is  
-> `"editor.quickSuggestions": true`  
-> in the `[markdown]` section.
-
-However, enabling just `editor.quickSuggestions` causes the suggestion popup to show *many* non-Markdown, irrelevant suggestions (like code completions, keywords, classes, etc.).  
-That is why we recommend **turning off all the other suggestion item types** (setting them to `false`) to keep suggestion lists focused and uncluttered for Markdown writing.
+> **Important:** The minimum required setting is `"editor.quickSuggestions": true`. However, this alone will show many irrelevant suggestions. The settings above keep suggestions focused on file names only.
 
 
 **macOS tip:** if Ctrl+Space triggers macOS input switching, use **Edit → Trigger Suggest** or rebind “Trigger Suggest” in VS Code.
@@ -126,6 +127,7 @@ That is why we recommend **turning off all the other suggestion item types** (se
 
 * `ctx-tool.ctxPrompt` — Ctx: Prompt current Markdown
 * `ctx-tool.ctxSave` — Ctx: Save current Markdown
+* `ctx-tool.configureMarkdownSettings` — Ctx: Configure Markdown Settings
 
 ---
 

@@ -104,7 +104,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	const cmdSave = vscode.commands.registerCommand('ctx-tool.ctxSave', () => {
 		runCtxOnActiveMarkdown('save');
 	});
-	context.subscriptions.push(cmdPrompt, cmdSave);
+	const cmdConfigure = vscode.commands.registerCommand('ctx-tool.configureMarkdownSettings', configureMarkdownSettings);
+	context.subscriptions.push(cmdPrompt, cmdSave, cmdConfigure);
 }
 
 export function deactivate() {
@@ -221,4 +222,50 @@ function runCtxOnActiveMarkdown(subcommand: 'prompt' | 'save') {
 
 	term.sendText(cmd, true);
 	term.show(true);
+}
+
+async function configureMarkdownSettings() {
+	const settings = [
+		{ key: 'editor.quickSuggestions', value: true },
+		{ key: 'editor.suggestOnTriggerCharacters', value: true },
+		{ key: 'editor.quickSuggestionsDelay', value: 50 },
+		{ key: 'editor.wordBasedSuggestions', value: false },
+		{ key: 'editor.inlineSuggest.enabled', value: false },
+		{ key: 'editor.snippetSuggestions', value: 'none' },
+		{ key: 'editor.suggest.showWords', value: false },
+		{ key: 'editor.suggest.showSnippets', value: false },
+		{ key: 'editor.suggest.showClasses', value: false },
+		{ key: 'editor.suggest.showColors', value: false },
+		{ key: 'editor.suggest.showConstructors', value: false },
+		{ key: 'editor.suggest.showConstants', value: false },
+		{ key: 'editor.suggest.showCustomcolors', value: false },
+		{ key: 'editor.suggest.showEnums', value: false },
+		{ key: 'editor.suggest.showEnumMembers', value: false },
+		{ key: 'editor.suggest.showEvents', value: false },
+		{ key: 'editor.suggest.showFields', value: false },
+		{ key: 'editor.suggest.showFiles', value: true },
+		{ key: 'editor.suggest.showFolders', value: false },
+		{ key: 'editor.suggest.showFunctions', value: false },
+		{ key: 'editor.suggest.showInterfaces', value: false },
+		{ key: 'editor.suggest.showIssues', value: false },
+		{ key: 'editor.suggest.showKeywords', value: false },
+		{ key: 'editor.suggest.showMethods', value: false },
+		{ key: 'editor.suggest.showModules', value: false },
+		{ key: 'editor.suggest.showOperators', value: false },
+		{ key: 'editor.suggest.showProperties', value: false },
+		{ key: 'editor.suggest.showReferences', value: false },
+		{ key: 'editor.suggest.showStructs', value: false },
+		{ key: 'editor.suggest.showTypeParameters', value: false },
+		{ key: 'editor.suggest.showUnits', value: false },
+		{ key: 'editor.suggest.showUsers', value: false },
+		{ key: 'editor.suggest.showValues', value: false }
+	];
+
+	const config = vscode.workspace.getConfiguration('[markdown]');
+
+	for (const { key, value } of settings) {
+		await config.update(key, value, vscode.ConfigurationTarget.Workspace);
+	}
+
+	vscode.window.showInformationMessage('Markdown settings configured for ctx-tool! You may need to reload the window for changes to take effect.');
 }
