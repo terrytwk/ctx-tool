@@ -11,8 +11,7 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"/Users/terrykim/Desktop/mit/6.1040/61040-assignment-4a"
-				// "/Users/terrykim/Desktop/dev/delete"
+				"{REPLACE_WITH_PATH_TO_TEST_FOLDER}"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
