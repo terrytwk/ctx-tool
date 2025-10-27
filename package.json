@@ -1,9 +1,14 @@
 {
   "name": "ctx-tool",
   "displayName": "ctx-tool",
-  "description": "a tool to easily use .ctx and link markdown",
+  "description": "Lightweight VS Code extension to link Markdown files by typing `@` / `!@` and to run a `ctx` CLI on the active Markdown file.",
   "version": "0.0.1",
+  "license": "MIT",
   "publisher": "terrytwk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/terrytwk/ctx-tool"
+  },
   "engines": {
     "vscode": "^1.105.0"
   },
