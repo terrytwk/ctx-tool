@@ -7,7 +7,7 @@ Lightweight VS Code extension to **link Markdown files by typing `@` / `!@`** an
 ## Inspiration
 Born from MIT **6.1040 Software Design**, where students work extensively with Markdown files and a custom LLM coding tool called [`context`](https://github.com/61040-fa25/concept_backend) to manage coding workflows and knowledge.
 
-6.1040 centers on **concept-based development** (see [Learning Concepts for Software Design](https://arxiv.org/pdf/2508.14511)), focusing on decomposing software into modular, reusable units—*concepts*—to improve teaching and practice. The course workflow requires constantly linking Markdown files and running the `ctx` CLI tool, which involves tedious manual copying of relative paths and shelling out to commands—this extension minimizes that friction.
+6.1040 centers on **concept-based development** (see [Learning Concepts for Software Design](https://arxiv.org/pdf/2508.14511)), focusing on decomposing software into modular, reusable units—*concepts*—to improve LLM-based workflow. The course workflow requires constantly linking Markdown files and running the `ctx` CLI tool to feed in the context to the LLM, which involves tedious manual copying of relative paths and shelling out to commands—this extension minimizes that friction.
 
 ## Features
 
