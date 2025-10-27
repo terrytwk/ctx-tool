@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 type MdEntry = {
 	uri: vscode.Uri;
@@ -225,47 +226,85 @@ function runCtxOnActiveMarkdown(subcommand: 'prompt' | 'save') {
 }
 
 async function configureMarkdownSettings() {
-	const settings = [
-		{ key: 'editor.quickSuggestions', value: true },
-		{ key: 'editor.suggestOnTriggerCharacters', value: true },
-		{ key: 'editor.quickSuggestionsDelay', value: 50 },
-		{ key: 'editor.wordBasedSuggestions', value: false },
-		{ key: 'editor.inlineSuggest.enabled', value: false },
-		{ key: 'editor.snippetSuggestions', value: 'none' },
-		{ key: 'editor.suggest.showWords', value: false },
-		{ key: 'editor.suggest.showSnippets', value: false },
-		{ key: 'editor.suggest.showClasses', value: false },
-		{ key: 'editor.suggest.showColors', value: false },
-		{ key: 'editor.suggest.showConstructors', value: false },
-		{ key: 'editor.suggest.showConstants', value: false },
-		{ key: 'editor.suggest.showCustomcolors', value: false },
-		{ key: 'editor.suggest.showEnums', value: false },
-		{ key: 'editor.suggest.showEnumMembers', value: false },
-		{ key: 'editor.suggest.showEvents', value: false },
-		{ key: 'editor.suggest.showFields', value: false },
-		{ key: 'editor.suggest.showFiles', value: true },
-		{ key: 'editor.suggest.showFolders', value: false },
-		{ key: 'editor.suggest.showFunctions', value: false },
-		{ key: 'editor.suggest.showInterfaces', value: false },
-		{ key: 'editor.suggest.showIssues', value: false },
-		{ key: 'editor.suggest.showKeywords', value: false },
-		{ key: 'editor.suggest.showMethods', value: false },
-		{ key: 'editor.suggest.showModules', value: false },
-		{ key: 'editor.suggest.showOperators', value: false },
-		{ key: 'editor.suggest.showProperties', value: false },
-		{ key: 'editor.suggest.showReferences', value: false },
-		{ key: 'editor.suggest.showStructs', value: false },
-		{ key: 'editor.suggest.showTypeParameters', value: false },
-		{ key: 'editor.suggest.showUnits', value: false },
-		{ key: 'editor.suggest.showUsers', value: false },
-		{ key: 'editor.suggest.showValues', value: false }
-	];
-
-	const config = vscode.workspace.getConfiguration('[markdown]');
-
-	for (const { key, value } of settings) {
-		await config.update(key, value, vscode.ConfigurationTarget.Workspace);
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+	if (!workspaceFolder) {
+		vscode.window.showErrorMessage('No workspace folder found.');
+		return;
 	}
 
-	vscode.window.showInformationMessage('Markdown settings configured for ctx-tool! You may need to reload the window for changes to take effect.');
+	const settingsPath = path.join(workspaceFolder.uri.fsPath, '.vscode', 'settings.json');
+
+	// Define the markdown settings
+	const markdownSettings = {
+		'editor.quickSuggestions': {
+			"comments": "on",
+			"strings": "on",
+			"other": "on"
+		},
+		'editor.suggestOnTriggerCharacters': true,
+		'editor.quickSuggestionsDelay': 50,
+		'editor.wordBasedSuggestions': "off",
+		'editor.inlineSuggest.enabled': false,
+		'editor.snippetSuggestions': 'none',
+		'editor.suggest.showWords': false,
+		'editor.suggest.showSnippets': false,
+		'editor.suggest.showClasses': false,
+		'editor.suggest.showColors': false,
+		'editor.suggest.showConstructors': false,
+		'editor.suggest.showConstants': false,
+		'editor.suggest.showCustomcolors': false,
+		'editor.suggest.showEnums': false,
+		'editor.suggest.showEnumMembers': false,
+		'editor.suggest.showEvents': false,
+		'editor.suggest.showFields': false,
+		'editor.suggest.showFiles': true,
+		'editor.suggest.showFolders': false,
+		'editor.suggest.showFunctions': false,
+		'editor.suggest.showInterfaces': false,
+		'editor.suggest.showIssues': false,
+		'editor.suggest.showKeywords': false,
+		'editor.suggest.showMethods': false,
+		'editor.suggest.showModules': false,
+		'editor.suggest.showOperators': false,
+		'editor.suggest.showProperties': false,
+		'editor.suggest.showReferences': false,
+		'editor.suggest.showStructs': false,
+		'editor.suggest.showTypeParameters': false,
+		'editor.suggest.showUnits': false,
+		'editor.suggest.showUsers': false,
+		'editor.suggest.showValues': false
+	};
+
+	try {
+		// Read existing settings
+		let settingsJson: any = {};
+		try {
+			const settingsContent = await vscode.workspace.fs.readFile(vscode.Uri.file(settingsPath));
+			settingsJson = JSON.parse(settingsContent.toString());
+		} catch {
+			// File doesn't exist or is invalid, start with empty object
+		}
+
+		// Ensure .vscode directory exists
+		const vscodeDir = path.dirname(settingsPath);
+		try {
+			await vscode.workspace.fs.readDirectory(vscode.Uri.file(vscodeDir));
+		} catch {
+			// Directory doesn't exist, create it
+			fs.mkdirSync(vscodeDir, { recursive: true });
+		}
+
+		// Merge markdown settings into existing settings
+		if (!settingsJson['[markdown]']) {
+			settingsJson['[markdown]'] = {};
+		}
+		Object.assign(settingsJson['[markdown]'], markdownSettings);
+
+		// Write settings back
+		fs.writeFileSync(settingsPath, JSON.stringify(settingsJson, null, '\t'), 'utf8');
+
+		vscode.window.showInformationMessage('Markdown settings configured for ctx-tool!');
+	} catch (error) {
+		vscode.window.showErrorMessage(`Failed to configure settings: ${error}`);
+	}
 }

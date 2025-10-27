@@ -38,10 +38,14 @@
   },
   "configurationDefaults": {
     "[markdown]": {
-      "editor.quickSuggestions": true,
+      "editor.quickSuggestions": {
+        "comments": "on",
+        "strings": "on",
+        "other": "on"
+      },
       "editor.suggestOnTriggerCharacters": true,
       "editor.quickSuggestionsDelay": 50,
-      "editor.wordBasedSuggestions": false,
+      "editor.wordBasedSuggestions": "off",
       "editor.inlineSuggest.enabled": false,
       "editor.snippetSuggestions": "none",
       "editor.suggest.showWords": false,
