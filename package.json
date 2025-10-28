@@ -2,7 +2,7 @@
   "name": "ctx-tool",
   "displayName": "ctx-tool",
   "description": "Lightweight VS Code extension to link Markdown files by typing `@` / `!@` and to run a `ctx` CLI on the active Markdown file.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "publisher": "terrytwk",
   "icon": "assets/icon.png",
