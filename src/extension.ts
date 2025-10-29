@@ -12,14 +12,35 @@ type MdEntry = {
 
 let mdIndex: MdEntry[] = [];
 let mdWatcher: vscode.FileSystemWatcher | undefined;
+let codeIndex: MdEntry[] = [];
+let codeWatcher: vscode.FileSystemWatcher | undefined;
+
+function getCodeExtensions(): string[] {
+	const config = vscode.workspace.getConfiguration('ctx-tool');
+	const extensions = config.get<string[]>('codeExtensions', ['ts', 'tsx', 'js', 'jsx']);
+	// Normalize: strip leading dots, lowercase, remove duplicates
+	return [...new Set(extensions.map(ext => ext.replace(/^\./, '').toLowerCase()))].filter(ext => ext.length > 0);
+}
+
+function buildCodeGlob(): string {
+	const exts = getCodeExtensions();
+	if (exts.length === 0) {
+		return ''; // No code files to watch
+	}
+	if (exts.length === 1) {
+		return `**/*.${exts[0]}`;
+	}
+	return `**/*.{${exts.join(',')}}`;
+}
 
 // Toggle: keep true while debugging so you always see a "Test" suggestion.
 
 export async function activate(context: vscode.ExtensionContext) {
-	// 1) Build initial index
+	// 1) Build initial indexes
 	await refreshIndex();
+	await refreshCodeIndex();
 
-	// 2) Watch for file changes
+	// 2) Watch for markdown file changes
 	mdWatcher = vscode.workspace.createFileSystemWatcher('**/*.md');
 	context.subscriptions.push(mdWatcher);
 
@@ -30,6 +51,22 @@ export async function activate(context: vscode.ExtensionContext) {
 		await removeFromIndex(uri);
 		await addToIndex(uri);
 	});
+
+	// 2b) Watch for code file changes
+	setupCodeWatcher(context);
+
+	// 2c) Listen for configuration changes
+	const configListener = vscode.workspace.onDidChangeConfiguration(async (e) => {
+		if (e.affectsConfiguration('ctx-tool.codeExtensions')) {
+			// Dispose old watcher
+			codeWatcher?.dispose();
+			// Rebuild index with new extensions
+			await refreshCodeIndex();
+			// Recreate watcher with new glob
+			setupCodeWatcher(context);
+		}
+	});
+	context.subscriptions.push(configListener);
 
 	// 3) Completion provider for Markdown
 	const selector: vscode.DocumentSelector = [
@@ -52,9 +89,9 @@ export async function activate(context: vscode.ExtensionContext) {
 				const includeBang = atIdx > 0 && beforeCursor[atIdx - 1] === '!';
 				const startCol = includeBang ? atIdx - 1 : atIdx;
 
-				// Typed span (for filtering/replacement), allow word-ish chars, slashes, dots, spaces
+				// Typed span (for filtering/replacement), allow word-ish chars, slashes, dots, spaces, # and {
 				const span = beforeCursor.slice(startCol);
-				if (!/^!?@[\w\-_. \/\\]*$/.test(span)) {
+				if (!/^!?@[\w\-_. \/\\#\{\}]*$/.test(span)) {
 					return;
 				}
 
@@ -64,31 +101,55 @@ export async function activate(context: vscode.ExtensionContext) {
 					position
 				);
 
-				// Text user typed after '@' (strip leading ! if any)
-				const typedFilter = span.replace(/^!@|^@/, '').toLowerCase();
+				// Determine mode based on first char after '@'
+				const afterAtIdx = atIdx + 1;
+				const modeChar = beforeCursor[afterAtIdx] || '';
+				// Modes: default = all; '#' -> md only; '{' -> code only
+				let mode: 'all' | 'md' | 'code' = 'all';
+				if (modeChar === '#') {
+					mode = 'md';
+				} else if (modeChar === '{') {
+					mode = 'code';
+				}
+
+				// Prepare the filter: strip '!@' or '@'
+				let typedFilter = span.replace(/^!@|^@/, '');
+				// If we used a mode char, strip it from the filter
+				if (modeChar === '#' || modeChar === '{') {
+					typedFilter = typedFilter.slice(1);
+				}
+				const typedLower = typedFilter.toLowerCase().trim();
 
 				const items: vscode.CompletionItem[] = [];
 
+				// Choose pools based on mode
+				const pools: MdEntry[][] = [];
+				if (mode === 'all' || mode === 'md') {
+					pools.push(mdIndex);
+				}
+				if (mode === 'all' || mode === 'code') {
+					pools.push(codeIndex);
+				}
 
+				for (const pool of pools) {
+					const candidates = pool.filter(e => {
+						if (!typedLower) { return true; }
+						return e.filename.toLowerCase().includes(typedLower)
+							|| e.relativePath.toLowerCase().includes(typedLower);
+					});
 
-				// (B) Real file-based suggestions
-				const candidates = mdIndex.filter(e => {
-					if (!typedFilter) { return true; }
-					return e.filename.toLowerCase().includes(typedFilter)
-						|| e.relativePath.toLowerCase().includes(typedFilter);
-				});
-
-				for (const e of candidates) {
-					const it = new vscode.CompletionItem(e.filename, vscode.CompletionItemKind.File);
-					it.detail = e.relativePath;                                // show relative path
-					it.filterText = `${span} ${e.filename} ${e.relativePath}`; // so it won't get filtered out
-					it.sortText = `a_${e.filename}`;
-					// Insert a link RELATIVE TO THE CURRENT DOCUMENT
-					it.textEdit = vscode.TextEdit.replace(
-						replaceRange,
-						buildMarkdownLinkRelativeToDoc(e.filename, e.uri, document.uri, includeBang)
-					);
-					items.push(it);
+					for (const e of candidates) {
+						const it = new vscode.CompletionItem(e.filename, vscode.CompletionItemKind.File);
+						it.detail = e.relativePath;                                // show relative path
+						it.filterText = `${span} ${e.filename} ${e.relativePath}`; // so it won't get filtered out
+						it.sortText = `${mode === 'md' ? 'a' : mode === 'code' ? 'b' : 'c'}_${e.filename}`;
+						// Insert a link RELATIVE TO THE CURRENT DOCUMENT
+						it.textEdit = vscode.TextEdit.replace(
+							replaceRange,
+							buildMarkdownLinkRelativeToDoc(e.filename, e.uri, document.uri, includeBang)
+						);
+						items.push(it);
+					}
 				}
 
 				return items;
@@ -111,6 +172,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
 	mdWatcher?.dispose();
+	codeWatcher?.dispose();
 }
 
 /* ------------------ Helpers ------------------ */
@@ -150,6 +212,68 @@ async function addToIndex(uri: vscode.Uri) {
 
 function removeFromIndex(uri: vscode.Uri) {
 	mdIndex = mdIndex.filter(e => e.uri.toString() !== uri.toString());
+}
+
+function setupCodeWatcher(context: vscode.ExtensionContext) {
+	const glob = buildCodeGlob();
+	if (!glob) {
+		// No code extensions configured, skip watcher
+		codeWatcher = undefined;
+		return;
+	}
+
+	codeWatcher = vscode.workspace.createFileSystemWatcher(glob);
+	context.subscriptions.push(codeWatcher);
+
+	codeWatcher.onDidCreate(async (uri) => addCodeToIndex(uri));
+	codeWatcher.onDidDelete((uri) => removeCodeFromIndex(uri));
+	codeWatcher.onDidChange(async (uri) => {
+		await removeCodeFromIndex(uri);
+		await addCodeToIndex(uri);
+	});
+}
+
+async function refreshCodeIndex() {
+	const glob = buildCodeGlob();
+	if (!glob) {
+		codeIndex = [];
+		return;
+	}
+
+	const uris = await vscode.workspace.findFiles(glob);
+	codeIndex = [];
+	for (const uri of uris) {
+		await addCodeToIndex(uri);
+	}
+}
+
+async function addCodeToIndex(uri: vscode.Uri) {
+	// Avoid dupes
+	removeCodeFromIndex(uri);
+
+	const wsFolder = vscode.workspace.getWorkspaceFolder(uri);
+	const filename = basename(uri.fsPath);
+	const absFsPath = uri.fsPath;
+
+	let relativePath = filename;
+	if (wsFolder) {
+		const base = wsFolder.uri.fsPath.replace(/[/\\]+$/, '');
+		const full = uri.fsPath;
+		const rel = full.startsWith(base) ? full.slice(base.length + 1) : filename;
+		relativePath = toPosix(rel);
+	}
+
+	codeIndex.push({
+		uri,
+		filename,
+		relativePath,
+		absFsPath,
+		workspaceFolder: wsFolder
+	});
+}
+
+function removeCodeFromIndex(uri: vscode.Uri) {
+	codeIndex = codeIndex.filter(e => e.uri.toString() !== uri.toString());
 }
 
 function basename(p: string): string {

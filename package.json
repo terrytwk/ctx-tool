@@ -1,8 +1,8 @@
 {
   "name": "ctx-tool",
   "displayName": "ctx-tool",
-  "description": "Lightweight VS Code extension to link Markdown files by typing `@` / `!@` and to run a `ctx` CLI on the active Markdown file.",
-  "version": "0.0.3",
+  "description": "Lightweight VS Code extension to link files (Markdown and code) by typing `@` / `!@` and to run a `ctx` CLI on the active Markdown file.",
+  "version": "0.1.0",
   "license": "MIT",
   "publisher": "terrytwk",
   "icon": "assets/icon.png",
@@ -40,7 +40,26 @@
         "command": "ctx-tool.configureMarkdownSettings",
         "title": "Ctx: Configure Markdown Settings"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "ctx-tool",
+      "properties": {
+        "ctx-tool.codeExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "ts",
+            "tsx",
+            "js",
+            "jsx"
+          ],
+          "description": "File extensions to index as code files (without leading dot). These files will appear in code-only mode (@{) and all-files mode (@).",
+          "markdownDescription": "File extensions to index as code files (without leading dot). These files will appear in code-only mode (`@{`) and all-files mode (`@`)."
+        }
+      }
+    }
   },
   "configurationDefaults": {
     "[markdown]": {

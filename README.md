@@ -1,6 +1,6 @@
 # ctx-tool
 
-Lightweight VS Code extension to **link Markdown files by typing `@` / `!@`** and to **run a `ctx` CLI** on the active Markdown file.
+Lightweight VS Code extension to **link files (Markdown and code) by typing `@` / `!@`** and to **run a `ctx` CLI** on the active Markdown file.
 
 ---
 
@@ -15,15 +15,22 @@ Born from MIT **6.1040 Software Design**, where students work extensively with M
 
 ## Features
 
-* **`@` & `!@` link completions (Markdown)**
+* **`@` & `!@` link completions (Markdown and Code files)**
 
-  * Type `@` to see all workspace `*.md` files; keep typing to filter.
+  * Type `@` to see all workspace files (Markdown + code); use mode characters to narrow the search:
+    * `@` → Shows all files (Markdown + code)
+    * `@#` → Shows only Markdown files (think `#` for headings)
+    * `@{` → Shows only code files (think `{` for code blocks)
+  * Type `!@` for image-style links (works with all modes: `!@`, `!@#`, `!@{`)
+  * Keep typing to filter by filename or path
   * Inserts a **relative** link from the current document:
 
     * `@` → `[@filename](path/to/file.md)`
     * `!@` → `![@filename](path/to/file.md)` (image-style)
   
   > **Auto-configured:** Optimal markdown editor settings are applied automatically. No configuration needed!
+  
+  > **Default code extensions:** By default, TypeScript and JavaScript files (`.ts`, `.tsx`, `.js`, `.jsx`) are indexed. You can customize this via `ctx-tool.codeExtensions` in your settings (see Configuration below).
 
 <img src="assets/demo-autocomplete.gif" alt="Demo: autocomplete linking with `@`" width="600"/>
 
@@ -61,12 +68,38 @@ Born from MIT **6.1040 Software Design**, where students work extensively with M
 **Linking**
 
 1. Open a `.md` file
-2. Type `@` (or `!@` for image links)
-3. Pick a file → a relative link is inserted
+2. Type `@` to see all files, `@#` for Markdown only, or `@{` for code only
+3. (Optional) Type `!@` instead of `@` for image-style links
+4. Keep typing to filter by filename or path
+5. Pick a file → a relative link is inserted
 
 **Running `ctx`**
 
 * Command Palette (`cmd + shift + P`) → run **"Ctx: Prompt current Markdown"** or **"Ctx: Save current Markdown."**
+
+---
+
+## Configuration
+
+### Code File Extensions
+
+You can configure which file extensions are indexed as "code files" using the `ctx-tool.codeExtensions` setting.
+
+**Default extensions:** `["ts", "tsx", "js", "jsx"]`
+
+**Important:** The setting **completely overwrites** the default list (it does not add to it). If you want to include additional extensions while keeping the defaults, you must specify the full list.
+
+**Example:** To add Python support while keeping TypeScript/JavaScript support:
+
+```json
+{
+  "ctx-tool.codeExtensions": ["ts", "tsx", "js", "jsx", "py"]
+}
+```
+
+**Workspace-specific:** Add this to `.vscode/settings.json` in your workspace for project-specific configuration.
+
+**Note:** Changes to this setting take effect immediately—the extension will automatically rebuild the index and update the file watcher.
 
 ---
 
